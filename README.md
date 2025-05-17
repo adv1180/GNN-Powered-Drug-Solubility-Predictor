@@ -1,1 +1,1 @@
-# -GNN-Powered-Drug-Solubility-Predictor
+# GNN-Powered-Drug-Solubility-Predictor
