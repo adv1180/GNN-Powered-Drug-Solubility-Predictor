@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GNN Drug Solubility Predictor</title>
+  <!-- Kekule.js for molecule drawing -->
+  <script src="https://unpkg.com/kekule/dist/kekule.js?module"></script>
+  <link rel="stylesheet" href="https://unpkg.com/kekule/dist/themes/default/kekule.css">
+</head>
+
+<body style="font-family: sans-serif; padding: 30px; max-width: 800px; margin: auto;">
+
+  <h2>🧬 GNN-Powered Drug Solubility Predictor</h2>
+  <p>
+    Enter a <strong>SMILES</strong> string or <strong>draw a molecule</strong> to predict its water solubility (in log mol/L).
+  </p>
+
+  <form method="post">
+    <!-- Text input for manual SMILES -->
+    <input
+      type="text"
+      id="smiles"
+      name="smiles"
+      value="{{ smiles or '' }}"
+      placeholder="e.g. CCO for ethanol"
+      style="width: 100%; padding: 8px; font-size: 1em; margin-bottom: 10px;"
+      required>
+
+    <br>
+    <details style="margin-bottom: 15px;">
+    <summary style="font-weight: bold;">🧭 How to draw a molecule</summary>
+    <ul style="margin-top: 10px;">
+            <li>🖉 Click the <strong>pencil</strong> tool to place atoms (default is Carbon).</li>
+            <li>🔗 Click and drag to create bonds between atoms.</li>
+            <li>🌐 Change atom type (e.g., O for Oxygen, N for Nitrogen) using the element dropdown (top toolbar).</li>
+            <li>➕ Click bonds to cycle between single / double / triple bonds.</li>
+            <li>🧼 Use eraser or trash icon to undo or clear the canvas.</li>
+            <li>🧪 When you're done, click <strong>“Use Drawing”</strong> to generate SMILES.</li>
+            <li>🔮 Then click <strong>“Predict”</strong> to get the solubility result.</li>
+    </ul>
+    </details>
+
+
+    <!-- Drawing canvas -->
+    <p><strong>Or draw a molecule:</strong></p>
+    <div id="molViewer" style="width: 100%; height: 300px; border: 1px solid #ccc;"></div>
+
+    <!-- Better spacing below canvas -->
+    <div style="margin-top: 20px; margin-bottom: 20px;">
+    <button type="button" onclick="convertDrawingToSMILES()" style="padding: 6px 14px; font-size: 1em;">🧪 Use Drawing</button>
+    </div>
+
+
+    <!-- Predict button -->
+    <button type="submit" style="padding: 8px 16px; font-size: 1em;">🔮 Predict</button>
+  </form>
+
+  <br>
+
+  {% if prediction is not none %}
+    {% if prediction == "❌ Invalid SMILES string." %}
+      <h3 style="color: red;">{{ prediction }}</h3>
+    {% else %}
+      {% if compound_name %}
+        <h3>🧪 Compound: <span style="color: navy;">{{ compound_name }}</span></h3>
+      {% endif %}
+      <h3>🔮 Predicted Solubility: <span style="color: green;">{{ prediction }}</span> log mol/L</h3>
+    {% endif %}
+  {% endif %}
+
+  <hr>
+
+  <p><strong>Example SMILES:</strong></p>
+  <ul>
+    <li><code>CCO</code> – ethanol</li>
+    <li><code>CC(=O)O</code> – acetic acid</li>
+    <li><code>C1=CC=CC=C1</code> – benzene</li>
+  </ul>
+
+  <!-- JS to handle drawing → SMILES -->
+    <script>
+    let editor;
+    window.onload = function () {
+        editor = new Kekule.Editor.Composer(document.getElementById('molViewer'));
+        editor.setPredefinedSetting('fullFunc');
+    }
+
+    function convertDrawingToSMILES() {
+        try {
+        const smiles = editor.exportData(Kekule.IO.DataFormat.SMILES);
+        if (smiles && smiles.length > 0) {
+            document.getElementById('smiles').value = smiles;
+        } else {
+            alert("⚠️ No molecule drawn. Please draw a structure first.");
+        }
+        } catch (e) {
+        alert("❌ Could not generate SMILES from drawing.");
+        console.error(e);
+        }
+    }
+    </script>
+
+
+</body>
+</html>
